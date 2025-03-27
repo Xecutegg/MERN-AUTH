@@ -1,12 +1,17 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { assets } from '../assets/assets'
+import { AppContent } from '../context/AppContext'
 
 const Header = () => {
+
+    const {userData} = useContext(AppContent)
+    console.log(userData)
+
     return (
         <div className='flex flex-col items-center mt-20 px-4 text-center text-gray-800'>
             <img src={assets.header_img} alt="" className='w-36 h-36 rounded-full mb-6' />
 
-            <h1 className='flex item-center gap-2 text-xl sm:text-3xl font-medium mb-2'>Hey Players
+            <h1 className='flex item-center gap-2 text-xl sm:text-3xl font-medium mb-2'>Hey {userData ? userData.name : 'Player!'}
 
                 <img className='w-8 aspect-square' src={assets.hand_wave} alt="" />
             </h1>

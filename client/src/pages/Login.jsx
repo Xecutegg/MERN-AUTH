@@ -10,7 +10,7 @@ const Login = () => {
 
     const navigate = useNavigate()
 
-    const {backendUrl, setIsLoggedin} = useContext(AppContent)
+    const {backendUrl, setIsLoggedin, getUserData, userData} = useContext(AppContent)
 
 
     const [state, setState] = useState('Sign up')
@@ -30,10 +30,11 @@ const Login = () => {
 
                if(data.success){
                 setIsLoggedin(true)
+                getUserData()
                 navigate('/')
-                toast.error('1')
+                toast.success(data.message)
                }else{
-                toast.error('2')
+                toast.error(error.message)
                }
 
             }else{
@@ -41,16 +42,17 @@ const Login = () => {
 
                 if(data.success){
                  setIsLoggedin(true)
+                 getUserData()
                  navigate('/')
                 }else{
-                 toast.error('3')
+                 toast.error(error.message)
                 }
 
             }
             
         } catch (error) {
-            toast.error(error.response.data.message)
-            console.log(error);
+            console.error(error.response?.data?.message || "Something went wrong");
+            toast.error(error.response?.data?.message || "Something went wrong");
             
             
         }
