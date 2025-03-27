@@ -8,12 +8,20 @@ import userRoutes from './routes/userRoutes.js';
 
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 4000;
 connectDB();
+
+// const allowedOrigins = ['http://localhost:5173'];
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ credentials: true }));
+app.use(cors({
+    origin: 'http://localhost:5173', // Allow only your frontend origin
+    credentials: true, // Allow credentials (cookies, authorization headers)
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 
 // api endpoints
 app.get('/', (req, res) => {res.send('Hello World!');});
