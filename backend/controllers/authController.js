@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import userModel from '../models/userModel.js';
 import transporter from '../config/nodemailer.js';
+import { WELCOME_TEMP } from '../config/emailTeamplate.js'
 
 // Register a new user
 export const register = async (req, res) => {
@@ -37,7 +38,8 @@ export const register = async (req, res) => {
                 from: "soumogoswami2003@gmail.com", // Must match the SMTP_USER
                 to: email,
                 subject: 'Welcome to One Dream',
-                text: `Hello Welcome to One Dream, we are happy to have you with us with this email id: ${email}.`,
+                // text: `Hello Welcome to One Dream, we are happy to have you with us with this email id: ${email}.`,
+                html: WELCOME_TEMP.replace("{{email}}", email).replace("{{user}}", name) 
         }
 
         try {
@@ -120,7 +122,7 @@ export const sendVerifyOtp = async (req, res) => {
 
 
         user.verifyOtp = otp;
-        user.verifyOtpExpiresAt = Date.now() + 10 * 60 * 1000;
+        user.verifyOtpExpiresAt = Date.now() + 10 * 60 * 1000; // 10min
 
         await user.save();
 
