@@ -89,7 +89,7 @@ export const WELCOME_TEMP = `<!DOCTYPE html>
 
 .badge {
     background: #1e77ff;
-    color: white;
+    color: #ffffff;
     padding: 12px 16px;
     border-radius: 50px;
     font-size: 12px;

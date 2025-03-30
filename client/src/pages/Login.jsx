@@ -1,115 +1,176 @@
-import React, { useContext, useState } from 'react'
-import { assets } from '../assets/assets'
-import { useNavigate } from 'react-router-dom'
-import { AppContent } from '../context/AppContext'
-import axios from 'axios'
-import { toast } from 'react-toastify'
-
+import React, { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AppContent } from '../context/AppContext';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const Login = () => {
+    const navigate = useNavigate();
+    const { backendUrl, setIsLoggedin, getUserData } = useContext(AppContent);
+    const [isActive, setIsActive] = useState(false);
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        password: ''
+    });
 
-    const navigate = useNavigate()
+    const handleInputChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
 
-    const {backendUrl, setIsLoggedin, getUserData, userData} = useContext(AppContent)
-
-
-    const [state, setState] = useState('Sign up')
-    const [name, setName] = useState('')
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-
-
-    const onSubmitHandler = async (e)=> {
+    const onSubmitHandler = async (e) => {
+        e.preventDefault();
         try {
-            e.preventDefault();
+            axios.defaults.withCredentials = true;
+            const endpoint = isActive ? '/api/auth/register' : '/api/auth/login';
+            const payload = isActive ? formData : { email: formData.email, password: formData.password };
 
-            axios.defaults.withCredentials = true
+            const { data } = await axios.post(backendUrl + endpoint, payload);
 
-            if(state === 'Sign up'){
-               const {data} = await axios.post(backendUrl + '/api/auth/register', {name, email, password})
-
-               if(data.success){
-                setIsLoggedin(true)
-                getUserData()
-                navigate('/')
-                toast.success(data.message)
-               }else{
-                toast.error(error.message)
-               }
-
-            }else{
-                const {data} = await axios.post(backendUrl + '/api/auth/login', {email, password})
-
-                if(data.success){
-                 setIsLoggedin(true)
-                 getUserData()
-                 navigate('/')
-                }else{
-                 toast.error(error.message)
-                }
-
+            if (data.success) {
+                setIsLoggedin(true);
+                await getUserData();
+                navigate('/');
+                toast.success(data.message);
             }
-            
         } catch (error) {
             console.error(error.response?.data?.message || "Something went wrong");
             toast.error(error.response?.data?.message || "Something went wrong");
-            
-            
         }
-    }
+    };
 
     return (
-        <div className='flex items-center justify-center min-h-screen px-6 sm:px-0 bg-gradient-to-br from-blue-300 to-purple-300'>
-            <img onClick={() => navigate('/')} src={assets.logo} alt="" className='absolute left-5 sm:left-20 top-5 w-28 sm:w-25 cursor-pointer' />
-            <div className='bg-slate-900 p-10 rounded-lg w-full sm:w-96 text-indigo-300 text-sm'>
-
-                <h2 className='text-3xl font-semibold text-white text-center mb-3 '>{state === 'Sign up' ? 'Create account' : 'Login'}</h2>
-
-                <p className='text-center text-sm mb-6'>{state === 'Sign up' ? 'Create your account' : 'Login to your account!'}</p>
-
-                <form onSubmit={onSubmitHandler}> 
-                    {state === 'Sign up' && (
-                        <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5c]'>
-                            <img src={assets.person_icon} alt="" />
-                            <input onChange={e => setName(e.target.value)} value={name} className='bg-transparent outline-none' type="text" placeholder='Full Name' required />
+        <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-fixed"
+             style={{ backgroundImage: "url('bg.jpg')" }}>
+            <div className={`relative w-full md:w-[850px] h-[550px] bg-white rounded-none md:rounded-[35px] shadow-xl m-0 md:m-5 overflow-hidden transition-all duration-700 ease-in-out ${
+                isActive ? 'active' : ''
+            }`}>
+                {/* Login Form */}
+                <div className={`absolute right-0 w-full md:w-1/2 h-full bg-white flex items-center px-5 md:px-10 py-16 z-10 transition-all duration-1000 ease-in-out delay-200 ${
+                    isActive ? 'md:right-1/2' : ''
+                }`}>
+                    <form className="w-full" onSubmit={onSubmitHandler}>
+                        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-8">Login</h1>
+                        
+                        <div className="relative mb-7">
+                            <input type="email" name="email" placeholder="Email" required
+                                   value={formData.email}
+                                   onChange={handleInputChange}
+                                   className="w-full p-3 bg-gray-100 rounded-lg border-none outline-none text-gray-800 font-medium"/>
+                            <i className='bx bxs-envelope absolute right-3 top-1/2 -translate-y-1/2 text-xl text-gray-500'/>
                         </div>
-                    )}
+                        
+                        <div className="relative mb-7">
+                            <input type="password" name="password" placeholder="Password" required
+                                   value={formData.password}
+                                   onChange={handleInputChange}
+                                   className="w-full p-3 bg-gray-100 rounded-lg border-none outline-none text-gray-800 font-medium"/>
+                            <i className='bx bxs-lock-alt absolute right-3 top-1/2 -translate-y-1/2 text-xl text-gray-500'/>
+                        </div>
 
-                    <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5c]'>
-                        <img src={assets.mail_icon} alt="" />
-                        <input onChange={e => setEmail(e.target.value)} value={email} className='bg-transparent outline-none' type="text" placeholder='Email ID' required />
+                        <button type="submit" className="w-full h-10 bg-blue-600 text-white rounded-lg shadow-md hover:bg-black hover:scale-105 transition-all duration-300">
+                            Login
+                        </button>
+                        
+                        <p onClick={() => navigate('/reset-password')} className='mt-4 text-indigo-500 cursor-pointer'>Forgot Password</p>
+                        
+                        <p className="text-sm text-gray-600 my-6">Or Login With Social Platforms</p>
+                        
+                        <div className="flex justify-center gap-4">
+                            {['bxl-discord-alt', 'bxl-twitter', 'bxl-google', 'bxl-facebook'].map((icon, index) => (
+                                <a key={index} href="#" className="p-2 border-2 border-gray-300 rounded-lg text-2xl text-gray-700 shadow-md hover:bg-gradient-to-r hover:from-blue-600 hover:to-cyan-500 hover:text-white hover:border-blue-600 hover:scale-105 transition-all duration-300">
+                                    <i className={`bx ${icon}`}/>
+                                </a>
+                            ))}
+                        </div>
+                    </form>
+                </div>
+
+                {/* Register Form */}
+                <div className={`absolute right-0 w-full md:w-1/2 h-full bg-white flex items-center px-5 md:px-10 py-16 z-10 transition-all duration-1000 ease-in-out delay-200 ${
+                    isActive ? 'visible md:right-1/2' : 'invisible'
+                }`}>
+                    <form className="w-full" onSubmit={onSubmitHandler}>
+                        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-8">Registration</h1>
+                        
+                        <div className="relative mb-7">
+                            <input type="text" name="name" placeholder="Username" required
+                                   value={formData.name}
+                                   onChange={handleInputChange}
+                                   className="w-full p-3 bg-gray-100 rounded-lg border-none outline-none text-gray-800 font-medium"/>
+                            <i className='bx bxs-user absolute right-3 top-1/2 -translate-y-1/2 text-xl text-gray-500'/>
+                        </div>
+                        
+                        <div className="relative mb-7">
+                            <input type="email" name="email" placeholder="Email" required
+                                   value={formData.email}
+                                   onChange={handleInputChange}
+                                   className="w-full p-3 bg-gray-100 rounded-lg border-none outline-none text-gray-800 font-medium"/>
+                            <i className='bx bxs-envelope absolute right-3 top-1/2 -translate-y-1/2 text-xl text-gray-500'/>
+                        </div>
+                        
+                        <div className="relative mb-7">
+                            <input type="password" name="password" placeholder="Password" required
+                                   value={formData.password}
+                                   onChange={handleInputChange}
+                                   className="w-full p-3 bg-gray-100 rounded-lg border-none outline-none text-gray-800 font-medium"/>
+                            <i className='bx bxs-lock-alt absolute right-3 top-1/2 -translate-y-1/2 text-xl text-gray-500'/>
+                        </div>
+
+                        <button type="submit" className="w-full h-10 bg-blue-600 text-white rounded-lg shadow-md hover:bg-black hover:scale-105 transition-all duration-300">
+                            Register Now
+                        </button>
+
+                        <p onClick={() => navigate('/reset-password')} className='mt-4 text-indigo-500 cursor-pointer'>Forgot Password</p>
+                        
+                        <p className="text-sm text-gray-600 my-6">Or Register With Social Platforms</p>
+                        
+                        <div className="flex justify-center gap-4">
+                            {['bxl-discord-alt', 'bxl-twitter', 'bxl-google', 'bxl-facebook'].map((icon, index) => (
+                                <a key={index} href="#" className="p-2 border-2 border-gray-300 rounded-lg text-2xl text-gray-700 shadow-md hover:bg-gradient-to-r hover:from-blue-600 hover:to-cyan-500 hover:text-white hover:border-blue-600 hover:scale-105 transition-all duration-300">
+                                    <i className={`bx ${icon}`}/>
+                                </a>
+                            ))}
+                        </div>
+                    </form>
+                </div>
+
+                {/* Toggle Container */}
+                <div className="absolute w-full h-full overflow-hidden">
+                    {/* Sliding Background */}
+                    <div className={`absolute w-[300%] md:w-[300%] h-full bg-blue-600 rounded-none md:rounded-[150px] overflow-hidden transition-all duration-1000 ease-in-out ${
+                        isActive ? 'left-1/2' : '-left-[250%]'
+                    }`}/>
+                    
+                    {/* Toggle Panels */}
+                    <div className={`absolute w-full md:w-1/2 h-full overflow-hidden flex flex-col items-center justify-center text-white z-20 transition-all duration-1000 ease-in-out ${
+                        isActive ? '-left-full md:-left-1/2 delay-300' : 'left-0 delay-700'
+                    }`}>
+                        <h1 className="text-3xl md:text-4xl font-bold mb-5 text-center">Hello, Players</h1>
+                        <p className="mb-5">Don't Have An Account?</p>
+                        <button onClick={() => setIsActive(true)}
+                                className="w-40 h-11 bg-transparent border-2 border-white rounded-lg hover:bg-gray-800 hover:border-blue-600 hover:scale-105 transition-all duration-300">
+                            Register
+                        </button>
                     </div>
-
-                    <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5c]'>
-                        <img src={assets.lock_icon} alt="" />
-                        <input onChange={e => setPassword(e.target.value)} value={password} className='bg-transparent outline-none' type="text" placeholder='Password' required />
+                    
+                    <div className={`absolute w-full md:w-1/2 h-full flex flex-col items-center justify-center text-white z-20 transition-all duration-1000 ease-in-out ${
+                        isActive ? 'right-0 delay-700' : '-right-full md:-right-1/2 delay-300'
+                    }`}>
+                        <h1 className="text-3xl md:text-4xl font-bold mb-5 text-center">Welcome Back!</h1>
+                        <p className="mb-5">Already Have An Account?</p>
+                        <button onClick={() => setIsActive(false)}
+                                className="w-40 h-11 bg-transparent border-2 border-white rounded-lg hover:bg-gray-800 hover:border-blue-600 hover:scale-105 transition-all duration-300">
+                            Login
+                        </button>
                     </div>
-
-                    <p onClick={() => navigate('/reset-password')} className='mb-4 text-indigo-500 cursor-pointer'>Forgot Password</p>
-
-                    <button className='w-full py-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900 cursor-pointer text-white font-medium'>{state}</button>
-                </form>
-                
-                <button className='w-full py-2.5 mt-3 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900 cursor-pointer text-white font-medium'>Login With Discord</button>
-
-                {state === 'Sign up' ? (
-
-                    <p className=' text-gray-400 text-center text-xs mt-4'>Already have an account? {' '}
-                        <span onClick={() => setState('Login')} className='text-blue-400 cursor-pointer underline'>Login Here</span>
-                    </p>)
-
-                    : (
-                        <p className=' text-gray-400 text-center text-xs mt-4'>Don't Have Account? {' '}
-                            <span onClick={() => setState('Sign up')} className='text-blue-400 cursor-pointer underline'>Sign Up</span>
-                        </p>
-                    )}
-
-
-
-
+                </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Login
+export default Login;
