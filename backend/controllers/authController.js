@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import userModel from '../models/userModel.js';
 import transporter from '../config/nodemailer.js';
 import { WELCOME_TEMP } from '../config/emailTeamplate.js'
+import blacklistModel from '../models/blacklistModel.js';
 
 // Register a new user
 export const register = async (req, res) => {
@@ -93,17 +94,22 @@ export const login = async (req, res) => {
 // Logout a user
 export const logout = async (req, res) => {
     try {
-        res.clearCookie('token', {
+        if (!req.cookies.token) {
+            return res.status(400).json({ success: false, message: "No token found" });
+        }
+
+        res.clearCookie("token", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
         });
 
-        return res.status(200).json({ success: true, message: 'Logged out successfully' });
+        return res.status(200).json({ success: true, message: "Logged out successfully" });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
+
 
 // sending verify otp
 export const sendVerifyOtp = async (req, res) => {
